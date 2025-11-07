@@ -2,7 +2,7 @@
 
 set -ex
 
-target=adtmp
+target=adtmp-server
 
 _build() {
     go build -C cmd/server -o ../../${target} -trimpath -ldflags "-s -w" && \
