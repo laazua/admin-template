@@ -10,11 +10,11 @@ write_timeout: 60s
 # 日志级别 [debug,info,warn,error]
 log_level: info
 # 日志输出格式 [text,json]
-log_format: text
+log_format: json
 # token 密钥
-secret_key:
+secret_key: DNdb23$kd&12mkK12
 # token过期时间
-expired_time:
+expired_time: 60s
 
 ### ===== 应用 DB 配置 ===== ###
 # 数据库最大空闲连接数

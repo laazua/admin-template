@@ -1,6 +1,6 @@
 ### 构建项目
 
-set -ex
+set -e
 
 target=adtmp-server
 
@@ -24,5 +24,7 @@ case "$1" in
         ;;
     *)
         echo "Usage: $0 [build|clean]"
+        echo "  构建 => $0"
+        echo "  清理 => $0 clean"
         ;;
 esac

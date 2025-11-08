@@ -4,8 +4,8 @@ go 1.25.3
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
-	go.yaml.in/yaml/v2 v2.4.3
 	golang.org/x/crypto v0.43.0
+	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
 )
