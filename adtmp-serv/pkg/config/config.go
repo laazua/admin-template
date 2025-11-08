@@ -22,6 +22,8 @@ type config struct {
 	LogFormat    string        `yaml:"log_format"`    // 日志输出格式
 	SecretKey    string        `yaml:"secret_key"`    // token 密钥
 	ExpiredTime  time.Duration `yaml:"expired_time"`  // token 过期时间
+	ServerKey    string        `yaml:"server_key"`    // 应用证书key
+	ServerCrt    string        `yaml:"server_crt"`    // 应用这书密钥
 	DBUrl        string        `yaml:"db_url"`        // 数据库连接地址
 	DBIdleConn   int           `yaml:"db_idle_conn"`  // 数据最大空闲连接数
 	DBOpenConn   int           `yaml:"db_open_conn"`  // 数据库最大打开连接数
@@ -39,6 +41,8 @@ func defaultConfig() *config {
 		LogFormat:    "text",
 		SecretKey:    "default-secret-key-change-in-production",
 		ExpiredTime:  24 * time.Hour,
+		ServerKey:    "",
+		ServerCrt:    "",
 		DBUrl:        "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
 		DBIdleConn:   10,
 		DBOpenConn:   100,

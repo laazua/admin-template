@@ -15,6 +15,9 @@ log_format: json
 secret_key: DNdb23$kd&12mkK12
 # token过期时间
 expired_time: 60s
+# 证书配置 [不配置时使用http]
+server_key: 
+server_crt: 
 
 ### ===== 应用 DB 配置 ===== ###
 # 数据库最大空闲连接数
