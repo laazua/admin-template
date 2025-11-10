@@ -8,9 +8,11 @@ read_timeout: 60s
 # 应用响应超时
 write_timeout: 60s
 # 日志级别 [debug,info,warn,error]
-log_level: info
+log_level: debug
 # 日志输出格式 [text,json]
-log_format: json
+log_format: text
+# 是否显示日志源文件 [true|false]
+log_source: true
 # token 密钥
 secret_key: DNdb23$kd&12mkK12
 # token过期时间

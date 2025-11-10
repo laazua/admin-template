@@ -61,7 +61,7 @@ func Start() {
 
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("启动服务失败", slog.String("Error", err.Error()))
-			os.Exit(-3)
+			os.Exit(-2)
 		}
 	}()
 

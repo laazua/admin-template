@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"adtmp/internal/domain/entities"
 	"adtmp/internal/domain/entities/dto"
 	"adtmp/internal/domain/entities/form"
 	"adtmp/internal/domain/entities/mapper"
@@ -35,4 +36,17 @@ func (roleService *roleService) GetById(ctx context.Context, id uint) (*dto.Role
 		return nil, err
 	}
 	return mapper.ToDtoResp(&roleRepo).(*dto.RoleResponse), nil
+}
+
+func (roleService *roleService) ListRole(ctx context.Context, limit, offset int) ([]*dto.RoleResponse, error) {
+	rolesRepo, err := roleService.roleRepo.List(ctx, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	roleDtos := mapper.ToDtoListResp(rolesRepo, func(e entities.Role) *dto.RoleResponse {
+		return &dto.RoleResponse{
+			ID: e.ID, Name: e.Name,Description: e.Description,
+		}
+	})
+	return roleDtos, nil
 }

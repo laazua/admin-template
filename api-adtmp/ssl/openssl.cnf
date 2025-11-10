@@ -1,0 +1,21 @@
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = CN   # 国家
+ST = SiChuan  # 省份(州)
+L = Chengdu  # 市
+O = Freedom  # 组织(公司)
+OU = own  # 组织单位(子部门或子公司)
+CN = 192.168.165.89 # 对于 SSL/TLS 证书，通常这个字段会是域名
+
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[alt_names]
+IP.1 = 192.168.165.88
+IP.2 = 192.168.165.89

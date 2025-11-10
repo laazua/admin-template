@@ -20,6 +20,7 @@ type config struct {
 	WriteTimeout time.Duration `yaml:"write_timeout"` // 应用响应超时时间
 	LogLevel     string        `yaml:"log_level"`     // 日志输出级别
 	LogFormat    string        `yaml:"log_format"`    // 日志输出格式
+	LogSource    bool          `yaml:"log_source"`    // 日志源文件是否显示
 	SecretKey    string        `yaml:"secret_key"`    // token 密钥
 	ExpiredTime  time.Duration `yaml:"expired_time"`  // token 过期时间
 	ServerKey    string        `yaml:"server_key"`    // 应用证书key
@@ -39,11 +40,12 @@ func defaultConfig() *config {
 		WriteTimeout: 15 * time.Second,
 		LogLevel:     "info",
 		LogFormat:    "text",
-		SecretKey:    "default-secret-key-change-in-production",
+		LogSource:    false,
+		SecretKey:    "",
 		ExpiredTime:  24 * time.Hour,
 		ServerKey:    "",
 		ServerCrt:    "",
-		DBUrl:        "postgres://user:pass@localhost:5432/dbname?sslmode=disable",
+		DBUrl:        "",
 		DBIdleConn:   10,
 		DBOpenConn:   100,
 		DBLifetime:   time.Hour,
@@ -59,7 +61,7 @@ func Get() *config {
 
 		// 尝试加载配置文件，如果失败则使用默认配置
 		if err := load(); err != nil {
-			slog.Warn("使用默认配置启动应用", slog.String("reason", err.Error()))
+			slog.Warn("使用默认配置启动应用", slog.String("Error", err.Error()))
 		}
 
 		// 验证关键配置
@@ -90,28 +92,20 @@ func load() error {
 
 	// 使用配置文件中的值更新当前配置
 	con = tempConfig
-	slog.Info("配置文件加载成功", slog.String("file", configFile))
+	slog.Info("配置文件加载成功", slog.String("ConfigFile", configFile))
 	return nil
 }
 
 // 验证配置
 func validateConfig() {
-	if con.SecretKey == "default-secret-key-change-in-production" {
-		slog.Warn("使用默认密钥，生产环境请修改 secret_key 配置")
-	}
-
-	if con.DBUrl == "postgres://user:pass@localhost:5432/dbname?sslmode=disable" {
-		slog.Warn("使用默认数据库连接，请配置正确的 db_url")
-	}
-
-	// 验证必要的配置项
 	if con.SecretKey == "" {
-		slog.Error("secret_key 不能为空")
+		slog.Error("请先配置应用 secret_key 字段")
 		os.Exit(-3)
 	}
 
 	if con.DBUrl == "" {
-		slog.Error("db_url 不能为空")
-		os.Exit(-3)
+		// postgres://user:pass@localhost:5432/dbname?sslmode=disable
+		slog.Error("请先配置数据库连接信息 db_url 字段")
+		os.Exit(-4)
 	}
 }

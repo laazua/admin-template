@@ -7,97 +7,121 @@ import (
 	"adtmp/internal/domain/entities/form"
 	"adtmp/internal/service"
 	"adtmp/pkg/api"
+	"adtmp/pkg/middleware"
 )
 
 type userHandler struct {
+	mw          middleware.Mw
 	userService service.UserService
 }
 
-func NewUserHandler(userService service.UserService) *userHandler {
-	return &userHandler{userService: userService}
+func NewUserHandler(mw middleware.Mw, userService service.UserService) *userHandler {
+	return &userHandler{mw: mw, userService: userService}
 }
 
-func (userHandler *userHandler) Register(mux *http.ServeMux) {
-	slog.Info("注册用户路由...")
-	mux.HandleFunc("POST /api/user", userHandler.create)
-	mux.HandleFunc("DELETE /api/user/{id}", userHandler.destroy)
-	mux.HandleFunc("PUT /api/user/{id}", userHandler.update)
-	mux.HandleFunc("GET /api/user/{id}", userHandler.retrieve)
-	mux.HandleFunc("GET /api/user", userHandler.list)
+func (h *userHandler) withMws(handler http.HandlerFunc, middlewares ...func(http.HandlerFunc) http.HandlerFunc) http.HandlerFunc {
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i](handler)
+	}
+	return handler
 }
 
-func (userHandler *userHandler) create(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) Register(mux *http.ServeMux) {
+	slog.Info("userHandler 注册路由并应用中间件 ...")
+	mux.HandleFunc("POST /api/user", h.withMws(
+		h.create,
+		h.mw.Auth,
+	))
+	mux.HandleFunc("DELETE /api/user/{id}", h.withMws(
+		h.destroy,
+		h.mw.Auth,
+	))
+	mux.HandleFunc("PUT /api/user/{id}", h.withMws(
+		h.update,
+		h.mw.Auth,
+	))
+	mux.HandleFunc("GET /api/user/{id}", h.withMws(
+		h.retrieve,
+		h.mw.Auth,
+	))
+	mux.HandleFunc("GET /api/user", h.withMws(
+		h.list,
+		h.mw.Auth,
+	))
+}
+
+func (h *userHandler) create(w http.ResponseWriter, r *http.Request) {
 	var user form.UserCreate
 	err := api.BindJSON(r, &user)
 	if err != nil {
-		slog.Error("用户处理器请求参数错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusBadRequest, "用户处理器请求参数错误")
+		slog.Error("userHandler 请求参数错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusBadRequest, "userHandler 请求参数错误")
 		return
 	}
-	err = userHandler.userService.CreateUser(r.Context(), &user)
+	err = h.userService.CreateUser(r.Context(), &user)
 	if err != nil {
-		slog.Error("用户处理器新增用户错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusInternalServerError, "用户处理器新增用户错误")
+		slog.Error("userHandler 新增用户错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusInternalServerError, "userHandler 新增用户错误")
 		return
 	}
 	api.Success(w, nil, "新增用户成功")
 }
 
-func (userHandler *userHandler) destroy(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) destroy(w http.ResponseWriter, r *http.Request) {
 	userId, err := api.StrToUint(r.PathValue("id"))
 	if err != nil {
-		slog.Error("用户处理器路径参数错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusBadRequest, "用户处理器路径参数错误")
+		slog.Error("userHandler 路径参数错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusBadRequest, "userHandler 路径参数错误")
 		return
 	}
-	if err := userHandler.userService.DestroyUser(r.Context(), userId); err != nil {
-		slog.Error("用户处理器删除用户错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusInternalServerError, "用户处理器删除用户错误")
+	if err := h.userService.DestroyUser(r.Context(), userId); err != nil {
+		slog.Error("userHandler 删除用户错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusInternalServerError, "userHandler 删除用户错误")
 		return
 	}
 	api.Success(w, nil, "删除用户成功")
 }
 
-func (userHandler *userHandler) update(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) update(w http.ResponseWriter, r *http.Request) {
 	userId, err := api.StrToUint(r.PathValue("id"))
 	if err != nil {
-		slog.Error("用户处理器路径参数错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusBadRequest, "用户处理器路径参数错误")
+		slog.Error("userHandler 路径参数错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusBadRequest, "userHandler 路径参数错误")
 		return
 	}
 	var user form.UserUpdate
 	if err := api.BindJSON(r, &user); err != nil {
-		slog.Error("用户处理器请求参数错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusBadRequest, "用户处理器请求参数错误")
+		slog.Error("userHandler 请求参数错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusBadRequest, "userHandler 请求参数错误")
 		return
 	}
-	err = userHandler.userService.UpdateUser(r.Context(), userId, &user)
+	err = h.userService.UpdateUser(r.Context(), userId, &user)
 	if err != nil {
-		slog.Error("用户处理器更新用户错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusInternalServerError, "用户处理器更新用户错误")
+		slog.Error("userHandler 更新用户错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusInternalServerError, "userHandler 更新用户错误")
 		return
 	}
 	api.Success(w, nil, "更新用户成功")
 }
 
-func (userHandler *userHandler) retrieve(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) retrieve(w http.ResponseWriter, r *http.Request) {
 	userId, err := api.StrToUint(r.PathValue("id"))
 	if err != nil {
-		slog.Error("路径参数类型转换错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusBadRequest, "路径参数错误")
+		slog.Error("userHandler 路径参数类型转换错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusBadRequest, "userHandler 路径参数错误")
 		return
 	}
-	userResp, err := userHandler.userService.GetById(r.Context(), userId)
+	userResp, err := h.userService.GetById(r.Context(), userId)
 	if err != nil {
-		slog.Error("检索用户错误", slog.String("Error", err.Error()))
-		api.Failure(w, http.StatusInternalServerError, "检索用户错误")
+		slog.Error("userHandler 检索用户错误", slog.String("Error", err.Error()))
+		api.Failure(w, http.StatusInternalServerError, "userHandler 检索用户错误")
 		return
 	}
 	api.Success(w, userResp, "检索用户成功")
 }
 
-func (userHandler *userHandler) list(w http.ResponseWriter, r *http.Request) {
+func (h *userHandler) list(w http.ResponseWriter, r *http.Request) {
 	limit := 0
 	offset := 10
-	userHandler.userService.ListUser(r.Context(), limit, offset)
+	h.userService.ListUser(r.Context(), limit, offset)
 }

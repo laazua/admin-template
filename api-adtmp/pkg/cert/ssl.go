@@ -18,9 +18,8 @@ type TLSOptions struct {
 
 // SetupTLS 配置 TLS 选项，如果证书文件不存在则返回不使用 TLS
 func SetupTLS() *TLSOptions {
-	cfg := config.Get()
-	serverCrt := cfg.ServerCrt
-	serverKey := cfg.ServerKey
+	serverCrt := config.Get().ServerCrt
+	serverKey := config.Get().ServerKey
 
 	// 检查证书文件是否存在
 	if serverCrt == "" || serverKey == "" {
@@ -61,7 +60,8 @@ func SetupTLS() *TLSOptions {
 		slog.Error("加载证书失败，将使用 HTTP 启动服务", slog.String("Error", err.Error()))
 		return &TLSOptions{UseTLS: false}
 	}
-
+	slog.Info("加载私钥证书文件成功", slog.String("Crt", serverCrt))
+	slog.Info("加载公钥证书文件成功", slog.String("Key", serverKey))
 	tlsConfig.Certificates = []tls.Certificate{cert}
 	slog.Info("已成功加载证书，将使用 HTTPS 启动服务")
 
@@ -83,7 +83,6 @@ func (t *TLSOptions) GetProtocol() string {
 
 // fileExists 检查文件是否存在
 func fileExists(filename string) bool {
-	slog.Info(filename)
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		return false
