@@ -14,7 +14,6 @@ import (
 	"adtmp/pkg/config"
 )
 
-// 颜色常量
 const (
 	colorReset  = "\033[0m"
 	colorRed    = "\033[31m"
@@ -26,25 +25,18 @@ const (
 
 // 检查是否支持颜色输出
 func supportsColor() bool {
-	// 检查环境变量
 	if os.Getenv("NO_COLOR") != "" {
 		return false
 	}
-
-	// 检查是否是 TTY
 	if fileInfo, _ := os.Stdout.Stat(); (fileInfo.Mode() & os.ModeCharDevice) == 0 {
 		return false
 	}
-
-	// Windows 特殊处理
 	if runtime.GOOS == "windows" {
 		return os.Getenv("TERM") != "" || os.Getenv("WT_SESSION") != "" || os.Getenv("ConEmuANSI") == "ON"
 	}
-
 	return true
 }
 
-// 自定义文本处理器，避免颜色代码被转义
 type colorTextHandler struct {
 	opts    slog.HandlerOptions
 	w       io.Writer
@@ -90,49 +82,32 @@ func (h *colorTextHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 func (h *colorTextHandler) Handle(ctx context.Context, r slog.Record) error {
 	var buf []byte
 
-	// 时间（固定宽度）
-	timeStr := h.formatTime(r.Time)
-	buf = append(buf, timeStr...)
-	buf = append(buf, ' ')
+	// TIME=...
+	buf = append(buf, h.kv("TIME", h.formatTime(r.Time))...)
 
-	// 级别（固定宽度）
-	levelStr := h.formatLevel(r.Level)
-	buf = append(buf, levelStr...)
+	// LEVEL=...
 	buf = append(buf, ' ')
+	buf = append(buf, h.kv("LEVEL", h.formatLevel(r.Level))...)
 
-	// 源文件信息（如果启用）
+	// Source=...
 	if h.opts.AddSource && r.PC != 0 {
-		sourceStr := h.formatSource(r.PC)
-		buf = append(buf, sourceStr...)
 		buf = append(buf, ' ')
+		buf = append(buf, h.kv("Source", h.formatSource(r.PC))...)
 	}
 
-	// 消息
-	msgStr := h.formatMessage(r.Message)
-	buf = append(buf, msgStr...)
+	// Message=...
+	buf = append(buf, ' ')
+	buf = append(buf, h.kv("Message", h.formatMessage(r.Message))...)
 
-	// 属性
-	attrsCount := 0
+	// Attrs
 	r.Attrs(func(attr slog.Attr) bool {
-		if attrsCount == 0 {
-			buf = append(buf, ' ')
-		} else {
-			buf = append(buf, ' ')
-		}
+		buf = append(buf, ' ')
 		buf = append(buf, h.formatAttr(attr)...)
-		attrsCount++
 		return true
 	})
-
-	// 额外的属性
 	for _, attr := range h.attrs {
-		if attrsCount == 0 {
-			buf = append(buf, ' ')
-		} else {
-			buf = append(buf, ' ')
-		}
+		buf = append(buf, ' ')
 		buf = append(buf, h.formatAttr(attr)...)
-		attrsCount++
 	}
 
 	buf = append(buf, '\n')
@@ -140,43 +115,52 @@ func (h *colorTextHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
-func (h *colorTextHandler) formatTime(t time.Time) []byte {
-	timeStr := t.Format("2006-01-02 15:04:05.000")
+func (h *colorTextHandler) kv(key string, val []byte) []byte {
 	if h.noColor {
-		return []byte(timeStr)
+		return []byte(key + "=" + string(val))
 	}
-	return []byte(colorWhite + timeStr + colorReset)
+	return []byte(colorCyan + key + colorReset + "=" + string(val))
+}
+
+func (h *colorTextHandler) formatTime(t time.Time) []byte {
+	s := t.Format("2006-01-02 15:04:05.000")
+	if h.noColor {
+		return []byte(s)
+	}
+	return []byte(colorWhite + s + colorReset)
 }
 
 func (h *colorTextHandler) formatLevel(level slog.Level) []byte {
-	var levelStr string
-	var color string
-
+	var s, c string
 	switch level {
 	case slog.LevelDebug:
-		levelStr = "DEBUG"
-		color = colorCyan
+		s, c = "DEBUG", colorCyan
 	case slog.LevelInfo:
-		levelStr = "INFO "
-		color = colorGreen
+		s, c = "INFO", colorGreen
 	case slog.LevelWarn:
-		levelStr = "WARN "
-		color = colorYellow
+		s, c = "WARN", colorYellow
 	case slog.LevelError:
-		levelStr = "ERROR"
-		color = colorRed
+		s, c = "ERROR", colorRed
 	default:
-		levelStr = level.String()
-		if len(levelStr) < 5 {
-			levelStr += strings.Repeat(" ", 5-len(levelStr))
-		}
-		color = colorWhite
+		s, c = level.String(), colorWhite
 	}
-
 	if h.noColor {
-		return []byte(levelStr)
+		return []byte(s)
 	}
-	return []byte(color + levelStr + colorReset)
+	return []byte(c + s + colorReset)
+}
+
+func (h *colorTextHandler) formatSource(pc uintptr) []byte {
+	fs := runtime.CallersFrames([]uintptr{pc})
+	f, _ := fs.Next()
+	if f.File == "" {
+		return []byte("unknown")
+	}
+	src := f.File + ":" + strconv.Itoa(f.Line)
+	if h.noColor {
+		return []byte(src)
+	}
+	return []byte(colorGreen + src + colorReset)
 }
 
 func (h *colorTextHandler) formatMessage(msg string) []byte {
@@ -186,50 +170,21 @@ func (h *colorTextHandler) formatMessage(msg string) []byte {
 	return []byte(colorWhite + msg + colorReset)
 }
 
-func (h *colorTextHandler) formatSource(pc uintptr) []byte {
-	fs := runtime.CallersFrames([]uintptr{pc})
-	f, _ := fs.Next()
-	if f.File == "" {
-		return []byte{}
-	}
-
-	// 使用完整文件路径，但可以调整显示格式
-	var source string
-	if h.noColor {
-		source = f.File + ":" + strconv.Itoa(f.Line)
-	} else {
-		source = colorGreen + f.File + ":" + strconv.Itoa(f.Line) + colorReset
-	}
-
-	return []byte(source)
-}
-
 func (h *colorTextHandler) formatAttr(attr slog.Attr) []byte {
 	key := attr.Key
 	value := attr.Value
 
-	// 敏感信息过滤
-	sensitiveKeys := []string{"password", "token", "secret", "authorization", "apikey"}
-	for _, sensitive := range sensitiveKeys {
-		if strings.Contains(strings.ToLower(key), sensitive) {
+	sensitive := []string{"password", "token", "secret", "authorization", "apikey"}
+	for _, s := range sensitive {
+		if strings.Contains(strings.ToLower(key), s) {
 			value = slog.StringValue("***")
 			break
 		}
 	}
-
-	var buf []byte
 	if h.noColor {
-		buf = append(buf, key...)
-		buf = append(buf, '=')
-		buf = append(buf, h.formatValue(value)...)
-	} else {
-		buf = append(buf, colorWhite...)
-		buf = append(buf, key...)
-		buf = append(buf, '=')
-		buf = append(buf, h.formatValue(value)...)
-		buf = append(buf, colorReset...)
+		return []byte(key + "=" + string(h.formatValue(value)))
 	}
-	return buf
+	return []byte(colorCyan + key + colorReset + "=" + string(h.formatValue(value)))
 }
 
 func (h *colorTextHandler) formatValue(v slog.Value) []byte {
@@ -244,7 +199,6 @@ func (h *colorTextHandler) formatValue(v slog.Value) []byte {
 }
 
 func (h *colorTextHandler) formatString(s string) []byte {
-	// 如果字符串需要引号，就加上引号
 	if needsQuoting(s) {
 		return []byte(strconv.Quote(s))
 	}
@@ -268,7 +222,7 @@ func needsQuoting(s string) bool {
 
 func createHandlerOptions() *slog.HandlerOptions {
 	var level slog.Level
-	switch config.Get().LogLevel {
+	switch strings.ToLower(config.Get().LogLevel) {
 	case "debug":
 		level = slog.LevelDebug
 	case "info":
@@ -280,7 +234,6 @@ func createHandlerOptions() *slog.HandlerOptions {
 	default:
 		level = slog.LevelInfo
 	}
-
 	return &slog.HandlerOptions{
 		Level:     level,
 		AddSource: config.Get().LogSource,
@@ -289,15 +242,12 @@ func createHandlerOptions() *slog.HandlerOptions {
 
 func Set() {
 	opts := createHandlerOptions()
+	noColor := !supportsColor() || os.Getenv("NO_COLOR") != ""
 
 	var handler slog.Handler
-
 	if config.Get().LogFormat == "json" {
-		// JSON 格式使用标准处理器
 		handler = slog.NewJSONHandler(os.Stdout, opts)
 	} else {
-		// 文本格式使用自定义处理器
-		noColor := !supportsColor() || os.Getenv("NO_COLOR") != ""
 		handler = newColorTextHandler(os.Stdout, opts, noColor)
 	}
 

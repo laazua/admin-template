@@ -63,7 +63,7 @@ func SetupTLS() *TLSOptions {
 	slog.Info("加载公钥证书文件成功", slog.String("Crt", serverCrt))
 	slog.Info("加载私钥证书文件成功", slog.String("Key", serverKey))
 	tlsConfig.Certificates = []tls.Certificate{cert}
-	slog.Info("已成功加载证书，将使用 HTTPS 启动服务")
+	slog.Info("已成功加载证书,将使用 HTTPS 启动服务")
 
 	return &TLSOptions{
 		UseTLS:    true,
