@@ -3,6 +3,7 @@ package xlog
 import (
 	"context"
 	"io"
+	"log"
 	"log/slog"
 	"os"
 	"runtime"
@@ -83,11 +84,11 @@ func (h *colorTextHandler) Handle(ctx context.Context, r slog.Record) error {
 	var buf []byte
 
 	// TIME=...
-	buf = append(buf, h.kv("TIME", h.formatTime(r.Time))...)
+	buf = append(buf, h.kv("Time", h.formatTime(r.Time))...)
 
 	// LEVEL=...
 	buf = append(buf, ' ')
-	buf = append(buf, h.kv("LEVEL", h.formatLevel(r.Level))...)
+	buf = append(buf, h.kv("Level", h.formatLevel(r.Level))...)
 
 	// Source=...
 	if h.opts.AddSource && r.PC != 0 {
@@ -253,4 +254,11 @@ func Set() {
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
+
+	// ---------- 标准库 log 适配 ----------
+	// 1. 去掉标准库前缀与时间戳（因为 slog 会统一格式）
+	log.SetFlags(0)
+
+	// 2. 让标准库 log 输出经过 slog 处理
+	log.SetOutput(logWriter{logger: logger})
 }
