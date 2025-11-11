@@ -6,18 +6,19 @@ import (
 
 	"adtmp/internal/domain/entities/form"
 	"adtmp/internal/domain/repositories"
+	"adtmp/pkg/security"
 )
 
 var errPwd = errors.New("invalid password")
 
 type authService struct {
-	pwdProvider   PwdProvider
-	tokenProvider TokenProvider
+	pwdProvider   security.PwdProvider
+	tokenProvider security.TokenProvider
 	authRepo      repositories.AuthRepository // 依赖接口
 }
 
 // 返回接口
-func NewAuthService(pwdProvider PwdProvider, tokenProvider TokenProvider, authRepo repositories.AuthRepository) AuthService {
+func NewAuthService(pwdProvider security.PwdProvider, tokenProvider security.TokenProvider, authRepo repositories.AuthRepository) AuthService {
 	return &authService{pwdProvider: pwdProvider, tokenProvider: tokenProvider, authRepo: authRepo}
 }
 

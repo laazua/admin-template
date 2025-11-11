@@ -8,15 +8,16 @@ import (
 	"adtmp/internal/domain/entities/form"
 	"adtmp/internal/domain/entities/mapper"
 	"adtmp/internal/domain/repositories"
+	"adtmp/pkg/security"
 )
 
 type userService struct {
-	pwdProvider PwdProvider
+	pwdProvider security.PwdProvider
 	// userRepo    repositories.UserRepository
 	userRepo repositories.Repo[entities.User]
 }
 
-func NewUserService(pwdProvider PwdProvider, userRepo repositories.Repo[entities.User]) UserService {
+func NewUserService(pwdProvider security.PwdProvider, userRepo repositories.Repo[entities.User]) UserService {
 	return &userService{pwdProvider: pwdProvider, userRepo: userRepo}
 }
 

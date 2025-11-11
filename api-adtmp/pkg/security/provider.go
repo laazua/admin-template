@@ -1,5 +1,5 @@
 // 由./*_provider.go实现
-package service
+package security
 
 import (
 	"adtmp/internal/domain/entities"

@@ -1,4 +1,4 @@
-package service
+package security
 
 import (
 	"errors"
@@ -24,8 +24,8 @@ func NewJWTProvider() TokenProvider {
 
 func (tokenProvider *tokenProvider) GenerateToken(user *entities.User) (string, error) {
 	claims := &entities.TokenClaims{
-		Email:    user.Email,
-		Username: user.Name,
+		Email: user.Email,
+		Name:  user.Name,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenProvider.expiresIn)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

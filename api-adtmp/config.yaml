@@ -12,11 +12,11 @@ log_level: debug
 # 日志输出格式 [text,json]
 log_format: text
 # 是否显示日志源文件 [true|false]
-log_source: true
+log_source: false
 # token 密钥
-secret_key: DNdb23$kd&12mkK12
+secret_key: kEqk1ODtM5IrsnRbbFVaD+QGc/1vW65BK6yM49LvvP4=
 # token过期时间
-expired_time: 60s
+expired_time: 60m
 # 证书配置 [不配置时使用http]
 server_key: ssl/server.key
 server_crt: ssl/server.crt
