@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log"
 	"log/slog"
 	"net/http"
 
@@ -26,6 +27,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		api.Failure(w, http.StatusBadRequest, "authHandler 请求参数错误")
 		return
 	}
+	log.Printf("用户 %v 尝试登录 ...", user.Email)
 	token, err := h.authService.AuthUser(r.Context(), &user)
 	if err != nil {
 		slog.Error("authHandler 用户认证错误", slog.String("Error", err.Error()))

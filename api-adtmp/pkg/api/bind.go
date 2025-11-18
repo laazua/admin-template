@@ -27,7 +27,9 @@ func BindJSON(r *http.Request, v any) error {
 	}
 	defer r.Body.Close()
 
+	// 使用 json.Decoder 直接解码，避免中间缓冲
 	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields() // 可选：拒绝未知字段
 	err := decoder.Decode(v)
 	if err != nil {
 		return fmt.Errorf("failed to decode JSON: %w", err)

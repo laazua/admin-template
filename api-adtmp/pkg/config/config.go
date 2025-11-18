@@ -90,9 +90,9 @@ func load() error {
 		return err
 	}
 
-	// 使用配置文件中的值更新当前配置
+	// 使用配置文件中的值更新当前(默认)配置
 	con = tempConfig
-	slog.Info("配置文件加载成功", slog.String("ConfigFile", configFile))
+	// slog.Info("配置文件加载成功", slog.String("ConfigFile", configFile))
 	return nil
 }
 
