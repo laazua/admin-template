@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"adtmp/internal/handler"
+	"adtmp/pkg/internal/handler"
 )
 
 // 包装器结构体，为每个 handler 添加中间件能力

@@ -67,12 +67,7 @@ func Start() {
 			os.Exit(-2)
 		}
 	}()
-
-	// slog.Info("程序启动成功",
-	// 	slog.String("Address", config.Get().Address),
-	// 	slog.String("Protocol", tlsOptions.GetProtocol()),
-	// )
-	log.Printf("程序使用 [%v] 启动成功. 监听地址 [%v]", tlsOptions.GetProtocol(), config.Get().Address)
+	log.Printf("程序启动成功. 监听地址 [%v]", config.Get().Address)
 
 	<-quit
 	slog.Info("程序关闭清理资源")

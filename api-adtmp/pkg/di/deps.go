@@ -5,9 +5,9 @@ package di
 import (
 	"net/http"
 
-	"adtmp/internal/handler"
-	"adtmp/internal/repository/store"
-	"adtmp/internal/service"
+	"adtmp/pkg/internal/handler"
+	"adtmp/pkg/internal/repository/store"
+	"adtmp/pkg/internal/service"
 	"adtmp/pkg/middleware"
 	"adtmp/pkg/security"
 

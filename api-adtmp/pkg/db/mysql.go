@@ -5,8 +5,8 @@ import (
 	"log"
 	"log/slog"
 
-	"adtmp/internal/domain/entities"
 	"adtmp/pkg/config"
+	"adtmp/pkg/internal/domain/entities"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -45,12 +45,24 @@ func Get() (*gorm.DB, error) {
 	if err := sqlDB.Ping(); err != nil {
 		return nil, err
 	}
-
-	if err := gormDB.AutoMigrate(&entities.User{}, &entities.Role{}, &entities.Route{}, &entities.UserRole{}, &entities.RoleRoute{}); err != nil {
-		// slog.Error("迁移表失败", slog.String("Error", err.Error()))
-		log.Printf("ERR 迁移表失败: %s", err.Error())
-		return nil, err
+	// 迁移表
+	tables := []any{&entities.User{}, &entities.Role{}, &entities.Route{}, &entities.UserRole{}, &entities.RoleRoute{}}
+	for _, table := range tables {
+		// log.Printf("MIGRATING table: %T", table)
+		if !gormDB.Migrator().HasTable(table) {
+			log.Printf("WARN 表 %T 不存在, 创建中 ...", table)
+			if err := gormDB.Migrator().CreateTable(table); err != nil {
+				log.Printf("ERR 创建表 %T 失败: %s", table, err.Error())
+				return nil, err
+			}
+			log.Printf("INFO 表 %T 创建成功", table)
+		}
 	}
+	// if err := gormDB.AutoMigrate(&entities.User{}, &entities.Role{}, &entities.Route{}, &entities.UserRole{}, &entities.RoleRoute{}); err != nil {
+	// 	// slog.Error("迁移表失败", slog.String("Error", err.Error()))
+	// 	log.Printf("ERR 迁移表失败: %s", err.Error())
+	// 	return nil, err
+	// }
 
 	return gormDB, nil
 }

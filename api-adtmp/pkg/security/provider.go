@@ -2,7 +2,7 @@
 package security
 
 import (
-	"adtmp/internal/domain/entities"
+	"adtmp/pkg/internal/domain/entities"
 )
 
 // - pwd_provider.go 实现

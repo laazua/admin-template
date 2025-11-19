@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
-	"adtmp/internal/domain/entities"
 	"adtmp/pkg/config"
+	"adtmp/pkg/internal/domain/entities"
 
 	"github.com/golang-jwt/jwt/v5"
 )

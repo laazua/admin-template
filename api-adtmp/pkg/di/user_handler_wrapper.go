@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"adtmp/internal/handler"
+	"adtmp/pkg/internal/handler"
 )
 
 type userHandlerWithMw struct {
