@@ -1,9 +1,10 @@
 package di
 
 import (
-	"adtmp/internal/handler"
 	"log/slog"
 	"net/http"
+
+	"adtmp/internal/handler"
 )
 
 type roleHandlerWithMw struct {

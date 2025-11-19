@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -23,7 +24,8 @@ func Start() {
 	// 依赖注入 && 路由注册
 	dB, err := db.Get()
 	if err != nil {
-		slog.Error("数据库连接错误", slog.String("Error", err.Error()))
+		// slog.Error("数据库连接错误", slog.String("Error", err.Error()))
+		log.Printf("ERR 数据库连接错误: %s", err.Error())
 		os.Exit(-1)
 	}
 
@@ -60,15 +62,17 @@ func Start() {
 		}
 
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("启动服务失败", slog.String("Error", err.Error()))
+			// slog.Error("启动服务失败", slog.String("Error", err.Error()))
+			log.Printf("ERR 启动服务失败: %s", err.Error())
 			os.Exit(-2)
 		}
 	}()
 
-	slog.Info("程序启动成功",
-		slog.String("Address", config.Get().Address),
-		slog.String("Protocol", tlsOptions.GetProtocol()),
-	)
+	// slog.Info("程序启动成功",
+	// 	slog.String("Address", config.Get().Address),
+	// 	slog.String("Protocol", tlsOptions.GetProtocol()),
+	// )
+	log.Printf("程序使用 [%v] 启动成功. 监听地址 [%v]", tlsOptions.GetProtocol(), config.Get().Address)
 
 	<-quit
 	slog.Info("程序关闭清理资源")

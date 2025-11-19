@@ -1,13 +1,14 @@
 package middleware
 
 import (
-	"adtmp/internal/domain/entities"
-	"adtmp/pkg/api"
-	"adtmp/pkg/security"
 	"context"
 	"log/slog"
 	"net/http"
 	"strings"
+
+	"adtmp/internal/domain/entities"
+	"adtmp/pkg/api"
+	"adtmp/pkg/security"
 )
 
 type Mw interface {

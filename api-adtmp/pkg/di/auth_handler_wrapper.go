@@ -1,9 +1,10 @@
 package di
 
 import (
-	"adtmp/internal/handler"
 	"log/slog"
 	"net/http"
+
+	"adtmp/internal/handler"
 )
 
 // 包装器结构体，为每个 handler 添加中间件能力

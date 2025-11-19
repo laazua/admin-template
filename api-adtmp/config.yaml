@@ -17,7 +17,7 @@ log_source: false
 secret_key: kEqk1ODtM5IrsnRbbFVaD+QGc/1vW65BK6yM49LvvP4=
 # token过期时间
 expired_time: 60m
-# 证书配置 [不配置时使用http]
+# 证书配置 [未配置时使用http]
 server_key: ssl/server.key
 server_crt: ssl/server.crt
 

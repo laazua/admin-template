@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+var (
+	errHeaderMissContentType = errors.New("missing Content-Type header")
+	errRequestBodyEmpty      = errors.New("request body is empty")
+	errDecodeJSONFailed      = errors.New("failed to decode JSON")
+)
+
 // BindJSON 解析 JSON 请求体
 func BindJSON(r *http.Request, v any) error {
 	// body, err := io.ReadAll(api.Request.Body)
@@ -20,10 +26,10 @@ func BindJSON(r *http.Request, v any) error {
 	// return json.Unmarshal(body, v)
 	contentType := r.Header.Get("Content-Type")
 	if !strings.Contains(contentType, "application/json") {
-		return errors.New("Content-Type must be application/json")
+		return errHeaderMissContentType
 	}
 	if r.Body == nil {
-		return errors.New("request body is empty")
+		return errRequestBodyEmpty
 	}
 	defer r.Body.Close()
 
@@ -32,7 +38,7 @@ func BindJSON(r *http.Request, v any) error {
 	decoder.DisallowUnknownFields() // 可选：拒绝未知字段
 	err := decoder.Decode(v)
 	if err != nil {
-		return fmt.Errorf("failed to decode JSON: %w", err)
+		return errDecodeJSONFailed
 	}
 
 	return validateRequiredFields(v)

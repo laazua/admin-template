@@ -1,8 +1,9 @@
 package di
 
 import (
-	"adtmp/pkg/middleware"
 	"net/http"
+
+	"adtmp/pkg/middleware"
 )
 
 type middlewareApplier struct {

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"log"
 	"log/slog"
 
 	"adtmp/internal/domain/entities"
@@ -46,7 +47,8 @@ func Get() (*gorm.DB, error) {
 	}
 
 	if err := gormDB.AutoMigrate(&entities.User{}, &entities.Role{}, &entities.Route{}, &entities.UserRole{}, &entities.RoleRoute{}); err != nil {
-		slog.Error("迁移表失败", slog.String("Error", err.Error()))
+		// slog.Error("迁移表失败", slog.String("Error", err.Error()))
+		log.Printf("ERR 迁移表失败: %s", err.Error())
 		return nil, err
 	}
 
